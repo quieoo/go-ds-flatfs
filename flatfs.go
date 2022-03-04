@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"metrics"
 	"os"
 	"path/filepath"
 	"strings"
@@ -394,6 +395,10 @@ func (fs *Datastore) renameAndUpdateDiskUsage(tmpPath, path string) error {
 // concurrent Put and a Delete operation, we cannot guarantee which one
 // will win.
 func (fs *Datastore) Put(key datastore.Key, value []byte) error {
+	s := time.Now()
+	defer func() {
+		metrics.FlatfsPutDura += time.Now().Sub(s)
+	}()
 	if !keyIsValid(key) {
 		return fmt.Errorf("when putting '%q': %v", key, ErrInvalidKey)
 	}
@@ -522,6 +527,10 @@ func (fs *Datastore) doPut(key datastore.Key, val []byte) error {
 }
 
 func (fs *Datastore) putMany(data map[datastore.Key][]byte) error {
+	s := time.Now()
+	defer func() {
+		metrics.FlatfsPutDura += time.Now().Sub(s)
+	}()
 	fs.shutdownLock.RLock()
 	defer fs.shutdownLock.RUnlock()
 	if fs.shutdown {
@@ -663,6 +672,11 @@ func (fs *Datastore) Get(key datastore.Key) (value []byte, err error) {
 }
 
 func (fs *Datastore) Has(key datastore.Key) (exists bool, err error) {
+	start := time.Now()
+	defer func() {
+		metrics.FlatfsHasDura += time.Now().Sub(start)
+	}()
+	//metrics.PrintStack(20)
 	// Can't exist in datastore.
 	if !keyIsValid(key) {
 		return false, nil
