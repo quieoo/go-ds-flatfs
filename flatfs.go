@@ -672,6 +672,7 @@ func (fs *Datastore) Get(key datastore.Key) (value []byte, err error) {
 }
 
 func (fs *Datastore) Has(key datastore.Key) (exists bool, err error) {
+	//metrics.PrintStack(20)
 	start := time.Now()
 	defer func() {
 		metrics.FlatfsHasDura += time.Now().Sub(start)

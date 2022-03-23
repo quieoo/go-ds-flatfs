@@ -1,8 +1,10 @@
 package flatfs
 
 import (
+	"metrics"
 	"os"
 	"runtime"
+	"time"
 )
 
 // don't block more than 16 threads on sync opearation
@@ -15,6 +17,10 @@ const SyncThreadsMax = 16
 var syncSemaphore chan struct{} = make(chan struct{}, SyncThreadsMax)
 
 func syncDir(dir string) error {
+	s := time.Now()
+	defer func() {
+		metrics.SyncTime.UpdateSince(s)
+	}()
 	if runtime.GOOS == "windows" {
 		// dir sync on windows doesn't work: https://git.io/vPnCI
 		return nil
@@ -36,6 +42,10 @@ func syncDir(dir string) error {
 }
 
 func syncFile(file *os.File) error {
+	s := time.Now()
+	defer func() {
+		metrics.SyncTime.UpdateSince(s)
+	}()
 	syncSemaphore <- struct{}{}
 	defer func() { <-syncSemaphore }()
 	return file.Sync()
