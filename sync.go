@@ -19,7 +19,9 @@ var syncSemaphore chan struct{} = make(chan struct{}, SyncThreadsMax)
 func syncDir(dir string) error {
 	s := time.Now()
 	defer func() {
-		metrics.SyncTime.UpdateSince(s)
+		if metrics.CMD_EnableMetrics {
+			metrics.SyncTime.UpdateSince(s)
+		}
 	}()
 	if runtime.GOOS == "windows" {
 		// dir sync on windows doesn't work: https://git.io/vPnCI
@@ -44,7 +46,9 @@ func syncDir(dir string) error {
 func syncFile(file *os.File) error {
 	s := time.Now()
 	defer func() {
-		metrics.SyncTime.UpdateSince(s)
+		if metrics.CMD_EnableMetrics {
+			metrics.SyncTime.UpdateSince(s)
+		}
 	}()
 	syncSemaphore <- struct{}{}
 	defer func() { <-syncSemaphore }()

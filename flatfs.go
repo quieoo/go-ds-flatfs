@@ -397,7 +397,10 @@ func (fs *Datastore) renameAndUpdateDiskUsage(tmpPath, path string) error {
 func (fs *Datastore) Put(key datastore.Key, value []byte) error {
 	s := time.Now()
 	defer func() {
-		metrics.FlatfsPutDura += time.Now().Sub(s)
+		if metrics.CMD_EnableMetrics {
+			metrics.FlatfsPutDura += time.Now().Sub(s)
+
+		}
 	}()
 	if !keyIsValid(key) {
 		return fmt.Errorf("when putting '%q': %v", key, ErrInvalidKey)
@@ -529,7 +532,9 @@ func (fs *Datastore) doPut(key datastore.Key, val []byte) error {
 func (fs *Datastore) putMany(data map[datastore.Key][]byte) error {
 	s := time.Now()
 	defer func() {
-		metrics.FlatfsPutDura += time.Now().Sub(s)
+		if metrics.CMD_EnableMetrics {
+			metrics.FlatfsPutDura += time.Now().Sub(s)
+		}
 	}()
 	fs.shutdownLock.RLock()
 	defer fs.shutdownLock.RUnlock()
@@ -675,7 +680,10 @@ func (fs *Datastore) Has(key datastore.Key) (exists bool, err error) {
 	//metrics.PrintStack(20)
 	start := time.Now()
 	defer func() {
-		metrics.FlatfsHasDura += time.Now().Sub(start)
+		if metrics.CMD_EnableMetrics {
+			metrics.FlatfsHasDura += time.Now().Sub(start)
+
+		}
 	}()
 	//metrics.PrintStack(20)
 	// Can't exist in datastore.
