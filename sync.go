@@ -17,6 +17,9 @@ const SyncThreadsMax = 16
 var syncSemaphore chan struct{} = make(chan struct{}, SyncThreadsMax)
 
 func syncDir(dir string) error {
+	if metrics.CMD_FastSync {
+		return nil
+	}
 	s := time.Now()
 	defer func() {
 		if metrics.CMD_EnableMetrics {
@@ -44,6 +47,9 @@ func syncDir(dir string) error {
 }
 
 func syncFile(file *os.File) error {
+	if metrics.CMD_FastSync {
+		return nil
+	}
 	s := time.Now()
 	defer func() {
 		if metrics.CMD_EnableMetrics {
