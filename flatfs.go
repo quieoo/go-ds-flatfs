@@ -274,6 +274,10 @@ func Open(path string, syncFiles bool) (*Datastore, error) {
 		opMap:        new(opMap),
 	}
 
+	if metrics.CMD_FastSync {
+		fs.sync = false
+	}
+
 	// This sets diskUsage to the correct value
 	// It might be slow, but allowing it to happen
 	// while the datastore is usable might
@@ -399,7 +403,6 @@ func (fs *Datastore) Put(key datastore.Key, value []byte) error {
 	defer func() {
 		if metrics.CMD_EnableMetrics {
 			metrics.FlatfsPutDura += time.Now().Sub(s)
-
 		}
 	}()
 	if !keyIsValid(key) {
